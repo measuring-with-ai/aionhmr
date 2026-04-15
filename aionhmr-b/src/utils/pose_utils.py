@@ -203,7 +203,7 @@ class Evaluator:
                         model_path=SMPLX_MODEL_PATH, 
                         age='kid', 
                         gender='neutral',
-                        kid_template_path='/gpu-data2/gchatz/slahmr/_DATA/body_models/smpl_kid_template.npy',
+                        kid_template_path='./data/smpl_kid_template.npy',
                         batch_size=batch_size, 
                         create_global_orient=False, 
                         create_body_pose=False,

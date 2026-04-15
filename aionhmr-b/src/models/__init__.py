@@ -31,14 +31,14 @@ def download_models(folder=CACHE_DIR_AIONHMR):
 def check_smpl_exists():
     import os
     candidates = [
-        f'{CACHE_DIR_AIONHMR}/data/smpl/SMPL_NEUTRAL.pkl',
-        f'data/basicModel_neutral_lbs_10_207_0_v1.0.0.pkl',
+        f'data/smpl/SMPL_NEUTRAL.pkl',
+        f'data/smpl/basicModel_neutral_lbs_10_207_0_v1.0.0.pkl',
     ]
     candidates_exist = [os.path.exists(c) for c in candidates]
     if not any(candidates_exist):
         raise FileNotFoundError(f"SMPL model not found. Please download it from https://smplify.is.tue.mpg.de/ and place it at {candidates[1]}")
 
-    # Code expects SMPL model at CACHE_DIR_AIONHMR/data/smpl/SMPL_NEUTRAL.pkl. Copy there if needed
+    # Code expects SMPL model at /data/smpl/SMPL_NEUTRAL.pkl. Copy there if needed
     if (not candidates_exist[0]) and candidates_exist[1]:
         convert_pkl(candidates[1], candidates[0])
 
@@ -65,7 +65,7 @@ def convert_pkl(old_pkl, new_pkl):
         pickle.dump(loaded, outfile)
 
 
-DEFAULT_CHECKPOINT=f"{CACHE_DIR_AIONHMR}/checkpoints/last.ckpt"
+DEFAULT_CHECKPOINT=f"./checkpoints/last.ckpt"
 
 def load_aionhmr(checkpoint_path=DEFAULT_CHECKPOINT):
     from pathlib import Path

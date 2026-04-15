@@ -19,7 +19,7 @@ class SMPL(smplx.SMPLLayer):
         """
 
         kwargs.setdefault("age", 'kid')
-        kwargs.setdefault("kid_template_path", '/gpu-data2/gchatz/slahmr/_DATA/body_models/smpl_kid_template.npy')
+        kwargs.setdefault("kid_template_path", './data/smpl_kid_template.npy')
 
         super(SMPL, self).__init__(*args, **kwargs)
         smpl_to_openpose = [24, 12, 17, 19, 21, 16, 18, 20, 0, 2, 5, 8, 1, 4,

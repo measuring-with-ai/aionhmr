@@ -18,7 +18,7 @@ AionHMR-b is a deep learning model that:
 
 Make sure you installed root dependencies first.
 
-Also, you should download the [SMPL](https://smplify.is.tue.mpg.de/) neutral model (`basicModel_neutral_lbs_10_207_0_v1.0.0.pkl`) and place it in `~/.cache/AionHMR/data/`.
+Also, you should download the [SMPL](https://smplify.is.tue.mpg.de/) neutral model (`basicModel_neutral_lbs_10_207_0_v1.0.0.pkl`) and place it in `./data/smpl/`.
 
 
 ---
@@ -27,7 +27,7 @@ Also, you should download the [SMPL](https://smplify.is.tue.mpg.de/) neutral mod
 
 Download the pretrained checkpoint from [Google Drive](https://drive.google.com/file/d/1z6TjB9dGllUvpDvU75QGrQHRxe0-I9Zj/view?usp=sharing).
 
-Place them in: `~/.cache/AionHMR/checkpoints/`
+Place them in: `./checkpoints/`
 
 ---
 

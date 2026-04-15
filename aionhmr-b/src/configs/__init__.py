@@ -118,7 +118,7 @@ def get_config(config_file: str, merge: bool = True, update_cachedir: bool = Fal
       # cfg.SMPL.JOINT_REGRESSOR_EXTRA = os.path.join(data_dir, "SMPL_to_J19.pkl")
       # cfg.SMPL.MEAN_PARAMS = os.path.join(data_dir, "smpl_mean_params.npz")
 
-      cfg.SMPL.DATA_DIR = os.path.join(os.environ["HOME"], ".cache", "4DHumans", "data")
+      cfg.SMPL.DATA_DIR = os.path.join("data")
       cfg.SMPL.MODEL_PATH = os.path.join(cfg.SMPL.DATA_DIR, "smpl")
       cfg.SMPL.JOINT_REGRESSOR_EXTRA = os.path.join(cfg.SMPL.DATA_DIR, "SMPL_to_J19.pkl")
       cfg.SMPL.MEAN_PARAMS = os.path.join(cfg.SMPL.DATA_DIR, "smpl_mean_params.npz")
