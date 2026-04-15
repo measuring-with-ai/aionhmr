@@ -2,3 +2,4 @@ __pycache__/
 *.py[cod]
 demo_out
 data
+checkpoints
