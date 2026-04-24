@@ -3,3 +3,5 @@ __pycache__/
 demo_out
 data
 checkpoints
+cache
+.vscode

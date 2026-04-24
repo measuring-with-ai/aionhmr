@@ -24,6 +24,7 @@ def main():
     parser.add_argument('--out_folder', type=str, default='demo_out', help='Output folder to save rendered results')
     parser.add_argument('--side_view', dest='side_view', action='store_true', default=False, help='If set, render side view also')
     parser.add_argument('--top_view', dest='top_view', action='store_true', default=False, help='If set, render top view also')
+    parser.add_argument('--per_person_render', dest='per_person_render', action='store_true', default=False, help='If set, save per-person renders')
     parser.add_argument('--full_frame', dest='full_frame', action='store_true', default=False, help='If set, render all people together also')
     parser.add_argument('--save_mesh', dest='save_mesh', action='store_true', default=False, help='If set, save meshes to disk also')
     parser.add_argument('--detector', type=str, default='vitdet', choices=['vitdet', 'regnety'], help='Using regnety improves runtime')
@@ -82,7 +83,7 @@ def main():
 
         # Run AionHMR-b on all detected humans
         dataset = ViTDetDataset(model_cfg, img_cv2, boxes)
-        dataloader = torch.utils.data.DataLoader(dataset, batch_size=8, shuffle=False, num_workers=0)
+        dataloader = torch.utils.data.DataLoader(dataset, batch_size=args.batch_size, shuffle=False, num_workers=0)
 
         all_verts = []
         all_cam_t = []
@@ -137,7 +138,8 @@ def main():
                                             top_view=True)
                     final_img = np.concatenate([final_img, top_img], axis=1)
 
-                cv2.imwrite(os.path.join(args.out_folder, f'{img_fn}_{person_id}.png'), 255*final_img[:, :, ::-1])
+                if args.per_person_render:
+                    cv2.imwrite(os.path.join(args.out_folder, f'{img_fn}_{person_id}.png'), 255*final_img[:, :, ::-1])
 
                 # Add all verts and cams to list
                 verts = out['pred_vertices'][n].detach().cpu().numpy()
