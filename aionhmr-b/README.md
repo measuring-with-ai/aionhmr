@@ -20,6 +20,9 @@ Make sure you installed root dependencies first.
 
 Also, you should download the [SMPL](https://smplify.is.tue.mpg.de/) neutral model (`basicModel_neutral_lbs_10_207_0_v1.0.0.pkl`) and place it in `./data/smpl/`.
 
+You should also put the following files in `./data/`: `smpl_kid_template.npy`, `smpl_mean_params.npz`, `SMPL_to_J19.pkl`, and `model_config.yaml`. 
+
+The complete data folder can also be downloaded from the research drive at `Measuring with AI (Projectfolder)\intern\CMAS-AionHMR-datafolder`.
 
 ---
 
@@ -36,8 +39,8 @@ Place them in: `./checkpoints/`
 Run inference on images:
 
 ```
-python demo/demo_image.py \
-    --img_folder example_data/images \
+python aionhmr-b/demo.py \
+    --img_folder aionhmr-b/example_data/images \
     --out_folder demo_out \
     --batch_size 32 \
     --side_view \
