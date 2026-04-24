@@ -70,7 +70,7 @@ DEFAULT_CHECKPOINT=f"./checkpoints/last.ckpt"
 def load_aionhmr(checkpoint_path=DEFAULT_CHECKPOINT):
     from pathlib import Path
     from ..configs import get_config
-    model_cfg = str(Path(checkpoint_path).parent.parent / 'model_config.yaml')
+    model_cfg = str(Path(checkpoint_path).parent.parent / 'data/model_config.yaml')
     model_cfg = get_config(model_cfg, update_cachedir=True)
 
     # Override some config values, to crop bbox correctly
