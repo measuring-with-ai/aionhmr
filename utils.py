@@ -183,3 +183,51 @@ def get_file_paths(results_df: pd.DataFrame, rowsel: int, camsel: int) -> tuple[
     avi_file = os.path.join(results_df.iloc[rowsel]['Vicondirectory'],results_df.iloc[rowsel][videocam])
 
     return vicon_file_path, markers_file_path, mosh_path, avi_file
+
+def load_obj_vertices_faces(path: str) -> tuple[np.ndarray, np.ndarray]:
+    '''
+    Loads vertices and faces from an OBJ file.
+
+    Parameters:
+        path (str): Path to the OBJ file.
+
+    Returns:
+        tuple[np.ndarray, np.ndarray]: A tuple containing:
+            - np.ndarray: An array of shape (num_vertices, 3) containing the vertex positions.
+            - np.ndarray: An array of shape (num_faces, 3) containing the vertex indices for each face.
+    '''
+    vertices = []
+    faces = []
+
+    with open(path, 'r') as f:
+        for line in f:
+            if not line.strip() or line.startswith('#'):
+                continue
+
+            parts = line.split()
+            tag = parts[0]
+
+            # vertex position
+            if tag == 'v':
+                # v x y z
+                x, y, z = map(float, parts[1:4])
+                vertices.append([x, y, z])
+
+            # face (supports v, v/t, v//n, v/t/n)
+            elif tag == 'f':
+                face = []
+                for v in parts[1:]:
+                    # e.g. "3/2/1" -> "3"
+                    vid = v.split('/')[0]
+                    face.append(int(vid) - 1)  # OBJ is 1-based, NumPy 0-based
+                # if the face is not a triangle, you might want to triangulate here
+                if len(face) == 3:
+                    faces.append(face)
+                # simple fan triangulation for n-gons:
+                elif len(face) > 3:
+                    for i in range(1, len(face) - 1):
+                        faces.append([face[0], face[i], face[i+1]])
+
+    vertices = np.array(vertices, dtype=np.float32)
+    faces = np.array(faces, dtype=np.int32)
+    return vertices, faces

@@ -11,6 +11,52 @@ from src.utils import recursive_to
 from src.datasets.vitdet_dataset import ViTDetDataset, DEFAULT_MEAN, DEFAULT_STD
 from src.utils.renderer import Renderer, cam_crop_to_full
 
+# As we run the AionHMR-b demo code using the command line, it cannot do relative imports from 
+# the utils.py file, so we need to copy the extract_frames_from_avi function here as well. In the 
+# future, it would be better to refactor the code so that we can avoid this code duplication, but 
+# for now this quick fix will do
+
+# from ..utils import extract_frames_from_avi
+def extract_frames_from_avi(file_path: str) -> tuple[np.ndarray, float]:
+    '''
+    Extracts frames from an AVI video file and returns them as a NumPy array along with the frames per second (FPS).
+    
+    Parameters:
+        file_path (str): Path to the AVI video file.
+        
+    Returns:
+        tuple[np.ndarray, float]: A tuple containing:
+            frames (np.ndarray): A NumPy array of shape (num_frames, height, width, channels) containing the video frames.
+            fps (float): The frames per second of the video.
+    '''
+    # Open the video file
+    cap = cv2.VideoCapture(file_path)
+    
+    # Handle the case where the video file cannot be opened
+    if not cap.isOpened():
+        raise ValueError(f"Cannot open video file: {file_path}")
+    
+    # Get the frames per second (FPS) of the video
+    fps = cap.get(cv2.CAP_PROP_FPS)
+
+    # Extract frames
+    frames = []
+    while True:
+        # Read next frame
+        ret, frame = cap.read()
+
+        # If ret is False, it means we've reached the end of the video or there was an error reading a frame
+        if not ret:
+            break
+
+        # Append the frame to the list of frames
+        frames.append(frame)
+    
+    # Release the video capture object
+    cap.release()
+
+    return np.array(frames), fps
+
 import time
 
 LIGHT_BLUE=(0.65098039,  0.74117647,  0.85882353)
@@ -21,6 +67,7 @@ def main():
     parser = argparse.ArgumentParser(description='AionHMR-b demo code')
     parser.add_argument('--checkpoint', type=str, default=DEFAULT_CHECKPOINT, help='Path to pretrained model checkpoint')
     parser.add_argument('--img_folder', type=str, default='example_data/images', help='Folder with input images')
+    parser.add_argument('--is_video', dest='is_video', action='store_true', default=False, help='If set, input is an AVI video file instead of image folder')
     parser.add_argument('--out_folder', type=str, default='demo_out', help='Output folder to save rendered results')
     parser.add_argument('--side_view', dest='side_view', action='store_true', default=False, help='If set, render side view also')
     parser.add_argument('--top_view', dest='top_view', action='store_true', default=False, help='If set, render top view also')
@@ -67,12 +114,32 @@ def main():
     # Make output directory if it does not exist
     os.makedirs(args.out_folder, exist_ok=True)
 
-    # Get all demo images that end with .jpg or .png
-    img_paths = [img for end in args.file_type for img in Path(args.img_folder).glob(end)]
+    # If input is video, we treat the video file path as the only "image path", and then we will extract frames from the video later. If input is image folder, we get all image paths as usual. 
+    # We use this approach because it allows us to reuse the same code for both videos and images.
+    if args.is_video:
+        img_paths = [args.img_folder]
+    else:
+        # Get all demo images that end with .jpg or .png
+        img_paths = [img for end in args.file_type for img in Path(args.img_folder).glob(end)]
+    
+    # For videos, we use an optimized way of extracting frames using a single pass through the video, instead of reading the video multiple times for each frame. 
+    if args.is_video:
+        new_img_paths = []
+        img_cv2s = []
+        img_path = img_paths[0] # Get the single video file path
+        frames, _ = extract_frames_from_avi(str(img_path))
+        for i, frame in enumerate(frames):
+            new_img_path = f'{img_path}_frame_{i:04d}.png'
+            new_img_paths.append(new_img_path)
+            img_cv2s.append(frame)
+        
+        # We require the img_paths because it is used to get the filename for saving results, but we can skip reading the images again since we already have them in img_cv2s
+        img_paths = new_img_paths
+    else:
+        img_cv2s = [cv2.imread(str(img_path)) for img_path in img_paths]
 
     # Iterate over all images in folder
-    for img_path in img_paths:
-        img_cv2 = cv2.imread(str(img_path))
+    for img_path, img_cv2 in zip(img_paths, img_cv2s):
 
         # Detect humans in image
         det_out = detector(img_cv2)
@@ -111,14 +178,15 @@ def main():
                 input_patch = batch['img'][n].cpu() * (DEFAULT_STD[:,None,None]/255) + (DEFAULT_MEAN[:,None,None]/255)
                 input_patch = input_patch.permute(1,2,0).numpy()
 
-                regression_img = renderer(out['pred_vertices'][n].detach().cpu().numpy(),
+                if args.side_view or args.top_view or args.per_person_render or args.full_frame:
+                    regression_img = renderer(out['pred_vertices'][n].detach().cpu().numpy(),
                                         out['pred_cam_t'][n].detach().cpu().numpy(),
                                         batch['img'][n],
                                         mesh_base_color=LIGHT_BLUE,
                                         scene_bg_color=(1, 1, 1),
                                         )
 
-                final_img = np.concatenate([input_patch, regression_img], axis=1)
+                    final_img = np.concatenate([input_patch, regression_img], axis=1)
 
                 if args.side_view:
                     side_img = renderer(out['pred_vertices'][n].detach().cpu().numpy(),
