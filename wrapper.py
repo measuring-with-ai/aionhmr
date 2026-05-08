@@ -1,10 +1,8 @@
 import tempfile
-
 import numpy as np
-import argparse
 import os
-import cv2
 from utils import find_files, get_file_paths, load_obj_vertices_faces
+from pathlib import Path
 
 def aionhmr_process_videos(video_file: str, output_path: str) -> None:
     """
@@ -40,10 +38,25 @@ def aionhmr_process_videos(video_file: str, output_path: str) -> None:
             full_video_tensor[file_names.index(file_name)] = vertices
         
         # Add a new dimension for the person, since we are only using one person, this dimension will have size 1
-        full_video_tensor = np.expand_dims(full_video_tensor, axis=0) # Shape: (1, frames, 6890, 3)
+        full_video_tensor = np.expand_dims(full_video_tensor, axis=0) # Shape: (1, frames, 6890, 3), (person, frames, vertices, coordinates)
 
         # Save the full video tensor as a .npy file
         np.save(f"{output_path}.npy", full_video_tensor)
         print(f'Saved processed video tensor to {output_path}')
 
-aionhmr_process_videos('data_temp/D Cal 03.2103034.20210310142924.avi', '../data/aionhmr/demo_out_new/D Cal 03.2103034.20210310142924')
+if __name__ == "__main__":
+    # Get all filepaths
+    filepaths_df = find_files(r'../webdav/Measuring with AI (Projectfolder)')
+
+    # Process all videos
+    for index in range(len(filepaths_df)):
+        for camera in range(2):
+            print(f"Processing video {index*2 + camera + 1} (index {index}, camera {camera}) out of {len(filepaths_df)*2}")
+
+            try:
+                _, _, _, video_file = get_file_paths(filepaths_df, rowsel=index, camsel=camera)
+                aionhmr_process_videos(video_file, f'../data/aionhmr/raw_output/{Path(video_file).stem}')
+            except Exception as e:
+                print(f"Error processing video {index*2 + camera + 1} (index {index}, camera {camera}): {e}")
+                with open("log.txt", "a") as log_file:
+                    log_file.write(f"Error processing video {index*2 + camera + 1} (index {index}, camera {camera}): {e}\n")
